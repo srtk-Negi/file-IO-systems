@@ -105,7 +105,6 @@ void create(FILE *invFile)
         fgets(item.body, 128, stdin);
         item.body[strcspn(item.body, "\n")] = '\0';
 
-        // seekPos = itemNumber * sizeof(Item);
         fseek(invFile, seekPos, SEEK_SET);
         fwrite(&item, sizeof(Item), 1L, invFile);
     }
@@ -208,5 +207,30 @@ void update(FILE *invFile)
 
 void delete(FILE *invFile)
 {
-    printf("deleted\n");
+    int itemNumber;
+    Item newItem;
+    Item oldItem;
+
+    printf("Enter an item number: ");
+    scanf("%d", &itemNumber);
+    getchar();
+
+    int seekPos = itemNumber * sizeof(Item);
+    fseek(invFile, seekPos, SEEK_SET);
+    int readCount = fread(&oldItem, sizeof(Item), 1L, invFile);
+
+    if (readCount == 1)
+    {
+        newItem.itemName[0] = '\0';
+        newItem.simpleName[0] = '\0';
+        newItem.currentQuantity = 0;
+        newItem.maxQuantity = 0;
+        newItem.body[0] = '\0';
+        fseek(invFile, seekPos, SEEK_SET);
+        fwrite(&newItem, sizeof(Item), 1L, invFile);
+    }
+    else
+    {
+        printf("ERROR: item not found\n");
+    }
 }
