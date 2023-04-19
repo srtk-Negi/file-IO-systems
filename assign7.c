@@ -87,9 +87,7 @@ void create(FILE *invFile)
     if (readCount == 1)
     {
         printf("ERROR: item already exists\n");
-        return;
     }
-
     else
     {
         fgets(item.simpleName, 16, stdin);
@@ -140,7 +138,45 @@ void read(FILE *invFile)
 
 void update(FILE *invFile)
 {
-    printf("updated\n");
+    Item newItem;
+    Item oldItem;
+    int itemNumber;
+    int seekPos;
+    int readCount;
+
+    printf("Enter an item number: ");
+    scanf("%d", &itemNumber);
+    getchar();
+
+    seekPos = itemNumber * sizeof(Item);
+    fseek(invFile, seekPos, SEEK_SET);
+    readCount = fread(&oldItem, sizeof(Item), 1L, invFile);
+
+    if (readCount != 1)
+    {
+        printf("ERROR: item not found\n");
+        return;
+    }
+
+    printf("Item number: ");
+    fgets(newItem.simpleName, 16, stdin);
+    newItem.simpleName[strcspn(newItem.simpleName, "\n")] = '\0';
+
+    printf("Item name: ");
+    fgets(newItem.itemName, 64, stdin);
+    newItem.itemName[strcspn(newItem.itemName, "\n")] = '\0';
+
+    printf("Current quantity: ");
+    scanf("%d", &newItem.currentQuantity);
+    getchar();
+
+    printf("Max quantity: ");
+    scanf("%d", &newItem.maxQuantity);
+    getchar();
+
+    printf("Description: ");
+    fgets(newItem.body, 128, stdin);
+    newItem.body[strcspn(newItem.body, "\n")] = '\0';
 }
 
 void delete(FILE *invFile)
