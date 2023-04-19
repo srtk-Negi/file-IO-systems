@@ -105,7 +105,7 @@ void create(FILE *invFile)
         fgets(item.body, 128, stdin);
         item.body[strcspn(item.body, "\n")] = '\0';
 
-        seekPos = itemNumber * sizeof(Item);
+        // seekPos = itemNumber * sizeof(Item);
         fseek(invFile, seekPos, SEEK_SET);
         fwrite(&item, sizeof(Item), 1L, invFile);
     }
@@ -143,6 +143,7 @@ void update(FILE *invFile)
     int itemNumber;
     int seekPos;
     int readCount;
+    char numInput[10];
 
     printf("Enter an item number: ");
     scanf("%d", &itemNumber);
@@ -155,28 +156,54 @@ void update(FILE *invFile)
     if (readCount != 1)
     {
         printf("ERROR: item not found\n");
-        return;
     }
+    else
+    {
+        printf("Simple name: ");
+        fgets(newItem.simpleName, 16, stdin);
+        newItem.simpleName[strcspn(newItem.simpleName, "\n")] = '\0';
+        if (newItem.simpleName[0] == '\0')
+        {
+            strcpy(newItem.simpleName, oldItem.simpleName);
+        }
 
-    printf("Item number: ");
-    fgets(newItem.simpleName, 16, stdin);
-    newItem.simpleName[strcspn(newItem.simpleName, "\n")] = '\0';
+        printf("Item name: ");
+        fgets(newItem.itemName, 64, stdin);
+        newItem.itemName[strcspn(newItem.itemName, "\n")] = '\0';
+        if (newItem.itemName[0] == '\0')
+        {
+            strcpy(newItem.itemName, oldItem.itemName);
+        }
 
-    printf("Item name: ");
-    fgets(newItem.itemName, 64, stdin);
-    newItem.itemName[strcspn(newItem.itemName, "\n")] = '\0';
+        printf("Current quantity: ");
+        fgets(numInput, 9, stdin);
+        numInput[strcspn(numInput, "\n")] = '\0';
+        readCount = sscanf(numInput, "%d", &newItem.currentQuantity);
+        if (readCount != 1)
+        {
+            newItem.currentQuantity = oldItem.currentQuantity;
+        }
 
-    printf("Current quantity: ");
-    scanf("%d", &newItem.currentQuantity);
-    getchar();
+        printf("Max quantity: ");
+        fgets(numInput, 9, stdin);
+        numInput[strcspn(numInput, "\n")] = '\0';
+        readCount = sscanf(numInput, "%d", &newItem.maxQuantity);
+        if (readCount != 1)
+        {
+            newItem.maxQuantity = oldItem.maxQuantity;
+        }
 
-    printf("Max quantity: ");
-    scanf("%d", &newItem.maxQuantity);
-    getchar();
+        printf("Description: ");
+        fgets(newItem.body, 128, stdin);
+        newItem.body[strcspn(newItem.body, "\n")] = '\0';
+        if (newItem.body[0] == '\0')
+        {
+            strcpy(newItem.body, oldItem.body);
+        }
 
-    printf("Description: ");
-    fgets(newItem.body, 128, stdin);
-    newItem.body[strcspn(newItem.body, "\n")] = '\0';
+        fseek(invFile, seekPos, SEEK_SET);
+        fwrite(&newItem, sizeof(Item), 1L, invFile);
+    }
 }
 
 void delete(FILE *invFile)
