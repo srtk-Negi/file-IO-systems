@@ -1,6 +1,8 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
+
+#define INVENTORY_FILE "inventory.dat"
 
 typedef struct
 {
@@ -11,48 +13,137 @@ typedef struct
     char body[128];
 } Item;
 
+void create(FILE *invFile);
+void read(FILE *invFile);
+void update(FILE *invFile);
+void delete(FILE *invFile);
+void showMenu();
+
 int main()
 {
-    int itemNum;
-    Item newItem;
-
-    printf("Enter item number: ");
-    scanf("%d", &itemNum);
-
-    FILE *fp = fopen("inventory.dat", "rb+");
-    if (fp == NULL)
+    while (true)
     {
-        printf("Null");
-        fp = fopen("inventory.dat", "wb+");
-    }
-    fseek(fp, itemNum * sizeof(Item), SEEK_SET);
+        showMenu();
+        FILE *invFile = fopen(INVENTORY_FILE, "rb+");
+        if (invFile == NULL)
+        {
+            invFile = fopen(INVENTORY_FILE, "wb+");
+        }
 
-    fread(&newItem, sizeof(Item), 1L, fp);
-    if (newItem.itemName[0] != '\0')
+        char choice;
+        if (scanf("%c", &choice) != 1)
+            return 1;
+
+        switch (choice)
+        {
+        case 'C':
+        case 'c':
+            create(invFile);
+            break;
+
+        case 'R':
+        case 'r':
+            read(invFile);
+            break;
+
+        case 'U':
+        case 'u':
+            update(invFile);
+            break;
+
+        case 'D':
+        case 'd':
+            delete (invFile);
+            break;
+        }
+        fclose(invFile);
+    }
+    return 0;
+}
+
+void showMenu()
+{
+    printf("\nEnter one of the following actions or press CTRL-D to exit.\n");
+    printf("C - create a new item\n");
+    printf("R - read an existing item\n");
+    printf("U - update an existing item\n");
+    printf("D - delete an existing item\n");
+}
+
+void create(FILE *invFile)
+{
+    Item item;
+    int seekPos;
+    int itemNumber;
+    int readCount;
+
+    scanf("%d", &itemNumber);
+    getchar();
+
+    seekPos = itemNumber * sizeof(Item);
+    fseek(invFile, seekPos, SEEK_SET);
+    readCount = fread(&item, sizeof(Item), 1L, invFile);
+
+    if (readCount == 1)
     {
         printf("ERROR: item already exists\n");
-        fclose(fp);
-        exit(1);
+        return;
     }
 
-    printf("Enter simple name: ");
-    scanf("%s", newItem.simpleName);
+    else
+    {
+        fgets(item.simpleName, 16, stdin);
+        item.simpleName[strcspn(item.simpleName, "\n")] = '\0';
 
-    printf("Enter item name: ");
-    scanf(" %[^\n]s", newItem.itemName);
+        fgets(item.itemName, 64, stdin);
+        item.itemName[strcspn(item.itemName, "\n")] = '\0';
 
-    printf("Enter current quantity: ");
-    scanf("%d", &newItem.currentQuantity);
+        scanf("%d", &item.currentQuantity);
+        getchar();
 
-    printf("Enter maximum quantity: ");
-    scanf("%d", &newItem.maxQuantity);
+        scanf("%d", &item.maxQuantity);
+        getchar();
 
-    printf("Enter description: ");
-    scanf(" %[^\n]s", newItem.body);
+        fgets(item.body, 128, stdin);
+        item.body[strcspn(item.body, "\n")] = '\0';
 
-    fseek(fp, itemNum * sizeof(Item), SEEK_SET);
-    fwrite(&newItem, sizeof(Item), 1, fp);
+        seekPos = itemNumber * sizeof(Item);
+        fseek(invFile, seekPos, SEEK_SET);
+        fwrite(&item, sizeof(Item), 1L, invFile);
+    }
+}
 
-    fclose(fp);
-    exit(0);
+void read(FILE *invFile)
+{
+    int itemNumber;
+    Item item;
+    int seekPos;
+    int readCount;
+
+    printf("Enter an item number: ");
+    scanf("%d", &itemNumber);
+    getchar();
+
+    seekPos = itemNumber * sizeof(Item);
+    fseek(invFile, seekPos, SEEK_SET);
+    readCount = fread(&item, sizeof(Item), 1L, invFile);
+
+    if (readCount == 1)
+    {
+        printf("Item Name: %s\nSimple Name: %s\nItem Number: %d\nQty: %d/%d\nDescription: %s\n\n", item.itemName, item.simpleName, itemNumber, item.currentQuantity, item.maxQuantity, item.body);
+    }
+    else
+    {
+        printf("ERROR: item not found\n");
+    }
+}
+
+void update(FILE *invFile)
+{
+    printf("updated\n");
+}
+
+void delete(FILE *invFile)
+{
+    printf("deleted\n");
 }
