@@ -13,6 +13,10 @@ typedef struct
     char body[128];
 } Item;
 
+Item item;
+Item newItem;
+Item oldItem;
+
 void create(FILE *invFile);
 void read(FILE *invFile);
 void update(FILE *invFile);
@@ -77,21 +81,19 @@ void create(FILE *invFile)
         invFile = fopen(INVENTORY_FILE, "wb+");
     }
 
-    Item item;
-    int seekPos;
-    int itemNumber;
-    int readCount;
+    int seekPos = 0;
+    int itemNumber = 0;
 
     scanf("%d", &itemNumber);
     getchar();
 
     seekPos = itemNumber * sizeof(Item);
     fseek(invFile, seekPos, SEEK_SET);
-    readCount = fread(&item, sizeof(Item), 1L, invFile);
+    fread(&item, sizeof(Item), 1L, invFile);
 
     if (item.simpleName[0] != '\0')
     {
-        printf("ERROR: item already exists\n");
+        printf("\nERROR: item already exists\n");
     }
     else
     {
@@ -112,6 +114,12 @@ void create(FILE *invFile)
 
         fseek(invFile, seekPos, SEEK_SET);
         fwrite(&item, sizeof(Item), 1L, invFile);
+
+        item.simpleName[0] = '\0';
+        item.itemName[0] = '\0';
+        item.currentQuantity = 0;
+        item.maxQuantity = 0;
+        item.body[0] = '\0';
     }
     fclose(invFile);
 }
@@ -123,26 +131,31 @@ void read(FILE *invFile)
     {
         invFile = fopen(INVENTORY_FILE, "wb+");
     }
-    int itemNumber;
-    Item item;
-    int seekPos;
-    int readCount;
 
-    printf("Enter an item number: ");
+    int itemNumber = 0;
+    int seekPos = 0;
+
+    printf("\nEnter an item number: ");
     scanf("%d", &itemNumber);
     getchar();
 
     seekPos = itemNumber * sizeof(Item);
     fseek(invFile, seekPos, SEEK_SET);
-    readCount = fread(&item, sizeof(Item), 1L, invFile);
+    fread(&item, sizeof(Item), 1L, invFile);
 
     if (item.simpleName[0] != '\0')
     {
         printf("\nItem Name: %s\nSimple Name: %s\nItem Number: %d\nQty: %d/%d\nDescription: %s\n\n", item.itemName, item.simpleName, itemNumber, item.currentQuantity, item.maxQuantity, item.body);
+
+        item.simpleName[0] = '\0';
+        item.itemName[0] = '\0';
+        item.currentQuantity = 0;
+        item.maxQuantity = 0;
+        item.body[0] = '\0';
     }
     else
     {
-        printf("ERROR: item not found\n");
+        printf("\nERROR: item not found\n");
     }
     fclose(invFile);
 }
@@ -154,14 +167,12 @@ void update(FILE *invFile)
     {
         invFile = fopen(INVENTORY_FILE, "wb+");
     }
-    Item newItem;
-    Item oldItem;
-    int itemNumber;
-    int seekPos;
-    int readCount;
+    int itemNumber = 0;
+    int seekPos = 0;
+    int readCount = 0;
     char numInput[10];
 
-    printf("Enter an item number: ");
+    printf("\nEnter an item number: ");
     scanf("%d", &itemNumber);
     getchar();
 
@@ -171,7 +182,7 @@ void update(FILE *invFile)
 
     if (oldItem.simpleName[0] == '\0')
     {
-        printf("ERROR: item not found\n");
+        printf("\nERROR: item not found\n");
     }
     else
     {
@@ -219,6 +230,18 @@ void update(FILE *invFile)
 
         fseek(invFile, seekPos, SEEK_SET);
         fwrite(&newItem, sizeof(Item), 1L, invFile);
+
+        newItem.simpleName[0] = '\0';
+        newItem.itemName[0] = '\0';
+        newItem.currentQuantity = 0;
+        newItem.maxQuantity = 0;
+        newItem.body[0] = '\0';
+
+        oldItem.simpleName[0] = '\0';
+        oldItem.itemName[0] = '\0';
+        oldItem.currentQuantity = 0;
+        oldItem.maxQuantity = 0;
+        oldItem.body[0] = '\0';
     }
     fclose(invFile);
 }
@@ -230,20 +253,20 @@ void delete(FILE *invFile)
     {
         invFile = fopen(INVENTORY_FILE, "wb+");
     }
-    int itemNumber;
-    Item item;
+    int itemNumber = 0;
+    int seekPos = 0;
 
-    printf("Enter an item number: ");
+    printf("\nEnter an item number: ");
     scanf("%d", &itemNumber);
     getchar();
 
-    int seekPos = itemNumber * sizeof(Item);
+    seekPos = itemNumber * sizeof(Item);
     fseek(invFile, seekPos, SEEK_SET);
     fread(&item, sizeof(Item), 1L, invFile);
 
     if (item.simpleName[0] != '\0')
     {
-        printf("%s was successfully deleted.\n", item.simpleName);
+        printf("\n%s was successfully deleted.\n", item.simpleName);
         item.simpleName[0] = '\0';
         item.itemName[0] = '\0';
         item.currentQuantity = 0;
@@ -254,7 +277,7 @@ void delete(FILE *invFile)
     }
     else
     {
-        printf("ERROR: item not found\n");
+        printf("\nERROR: item not found\n");
     }
     fclose(invFile);
 }

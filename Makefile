@@ -5,4 +5,4 @@ assign7:assign7.o
 	gcc assign7.o -o assign7
 
 clean:
-	rm *.o a7
+	rm *.o assign7
