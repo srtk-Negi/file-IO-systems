@@ -24,15 +24,12 @@ int main()
     while (true)
     {
         showMenu();
-        FILE *invFile = fopen(INVENTORY_FILE, "rb+");
-        if (invFile == NULL)
-        {
-            invFile = fopen(INVENTORY_FILE, "wb+");
-        }
+        FILE *invFile;
 
         char choice;
         if (scanf("%c", &choice) != 1)
             return 1;
+        getchar();
 
         switch (choice)
         {
@@ -55,8 +52,10 @@ int main()
         case 'd':
             delete (invFile);
             break;
+
+        default:
+            printf("ERROR: invalid option\n");
         }
-        fclose(invFile);
     }
     return 0;
 }
@@ -72,6 +71,12 @@ void showMenu()
 
 void create(FILE *invFile)
 {
+    invFile = fopen(INVENTORY_FILE, "rb+");
+    if (invFile == NULL)
+    {
+        invFile = fopen(INVENTORY_FILE, "wb+");
+    }
+
     Item item;
     int seekPos;
     int itemNumber;
@@ -84,7 +89,7 @@ void create(FILE *invFile)
     fseek(invFile, seekPos, SEEK_SET);
     readCount = fread(&item, sizeof(Item), 1L, invFile);
 
-    if (readCount == 1)
+    if (item.simpleName[0] != '\0')
     {
         printf("ERROR: item already exists\n");
     }
@@ -108,10 +113,16 @@ void create(FILE *invFile)
         fseek(invFile, seekPos, SEEK_SET);
         fwrite(&item, sizeof(Item), 1L, invFile);
     }
+    fclose(invFile);
 }
 
 void read(FILE *invFile)
 {
+    invFile = fopen(INVENTORY_FILE, "rb+");
+    if (invFile == NULL)
+    {
+        invFile = fopen(INVENTORY_FILE, "wb+");
+    }
     int itemNumber;
     Item item;
     int seekPos;
@@ -125,18 +136,24 @@ void read(FILE *invFile)
     fseek(invFile, seekPos, SEEK_SET);
     readCount = fread(&item, sizeof(Item), 1L, invFile);
 
-    if (readCount == 1)
+    if (item.simpleName[0] != '\0')
     {
-        printf("Item Name: %s\nSimple Name: %s\nItem Number: %d\nQty: %d/%d\nDescription: %s\n\n", item.itemName, item.simpleName, itemNumber, item.currentQuantity, item.maxQuantity, item.body);
+        printf("\nItem Name: %s\nSimple Name: %s\nItem Number: %d\nQty: %d/%d\nDescription: %s\n\n", item.itemName, item.simpleName, itemNumber, item.currentQuantity, item.maxQuantity, item.body);
     }
     else
     {
         printf("ERROR: item not found\n");
     }
+    fclose(invFile);
 }
 
 void update(FILE *invFile)
 {
+    invFile = fopen(INVENTORY_FILE, "rb+");
+    if (invFile == NULL)
+    {
+        invFile = fopen(INVENTORY_FILE, "wb+");
+    }
     Item newItem;
     Item oldItem;
     int itemNumber;
@@ -150,9 +167,9 @@ void update(FILE *invFile)
 
     seekPos = itemNumber * sizeof(Item);
     fseek(invFile, seekPos, SEEK_SET);
-    readCount = fread(&oldItem, sizeof(Item), 1L, invFile);
+    fread(&oldItem, sizeof(Item), 1L, invFile);
 
-    if (readCount != 1)
+    if (oldItem.simpleName[0] == '\0')
     {
         printf("ERROR: item not found\n");
     }
@@ -203,13 +220,18 @@ void update(FILE *invFile)
         fseek(invFile, seekPos, SEEK_SET);
         fwrite(&newItem, sizeof(Item), 1L, invFile);
     }
+    fclose(invFile);
 }
 
 void delete(FILE *invFile)
 {
+    invFile = fopen(INVENTORY_FILE, "rb+");
+    if (invFile == NULL)
+    {
+        invFile = fopen(INVENTORY_FILE, "wb+");
+    }
     int itemNumber;
-    Item newItem;
-    Item oldItem;
+    Item item;
 
     printf("Enter an item number: ");
     scanf("%d", &itemNumber);
@@ -217,20 +239,22 @@ void delete(FILE *invFile)
 
     int seekPos = itemNumber * sizeof(Item);
     fseek(invFile, seekPos, SEEK_SET);
-    int readCount = fread(&oldItem, sizeof(Item), 1L, invFile);
+    fread(&item, sizeof(Item), 1L, invFile);
 
-    if (readCount == 1)
+    if (item.simpleName[0] != '\0')
     {
-        newItem.itemName[0] = '\0';
-        newItem.simpleName[0] = '\0';
-        newItem.currentQuantity = 0;
-        newItem.maxQuantity = 0;
-        newItem.body[0] = '\0';
+        printf("%s was successfully deleted.\n", item.simpleName);
+        item.simpleName[0] = '\0';
+        item.itemName[0] = '\0';
+        item.currentQuantity = 0;
+        item.maxQuantity = 0;
+        item.body[0] = '\0';
         fseek(invFile, seekPos, SEEK_SET);
-        fwrite(&newItem, sizeof(Item), 1L, invFile);
+        fwrite(&item, sizeof(Item), 1L, invFile);
     }
     else
     {
         printf("ERROR: item not found\n");
     }
+    fclose(invFile);
 }
